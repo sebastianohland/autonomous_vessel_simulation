@@ -3,52 +3,8 @@ import numpy as np
 import json
 from classes.TargetVessel import TargetVessel
 from classes.OwnVessel import OwnVessel
+from classes.State import State
 from tools import theta_to_coord
-
-
-state = {
-    "ownvessel": {
-        "xpos": 0,
-        "ypos": 0,
-        "course": 90,
-        "speed": 5
-    },
-    "targetvessels": [
-        {
-            "id": "tv1",
-            "xpos": 3.5,
-            "ypos": 3.5,
-            "course": 180,
-            "speed": 4
-        },
-        {
-            "id": "tv2",
-            "xpos": 4.0,
-            "ypos": -1.5,
-            "course": 0,
-            "speed": 8
-        },
-    ],
-    "staticobstacles": [
-
-    ],
-}
-
-ow = OwnVessel(0, 0, 90, 5)
-tv1 = TargetVessel(3.5, 3.5, 180, 4)
-tv2 = TargetVessel(5.0, -3.7, 45, 8)
-
-
-def add_target_vessel(target_vessel):
-    pass
-
-
-def add_own_vessel(own_vessel):
-    pass
-
-
-def ass_static_obstacle(obstacle):
-    pass
 
 
 def plot_state(state, scale):
@@ -89,9 +45,45 @@ def plot_state(state, scale):
     plt.show()
 
 
-print(state)
+examplestate = {
+    "ownvessel": {
+        "xpos": 0,
+        "ypos": 0,
+        "course": 90,
+        "speed": 5
+    },
+    "targetvessels": [
+        {
+            "id": "tv1",
+            "xpos": 3.5,
+            "ypos": 3.5,
+            "course": 180,
+            "speed": 4
+        },
+        {
+            "id": "tv2",
+            "xpos": 5,
+            "ypos": -8,
+            "course": 0,
+            "speed": 8
+        },
+    ],
+    "staticobstacles": [
 
-with open("state/state.json", "w") as outfile:
-    json.dump(state, outfile)
+    ],
+}
 
-# plot_state(state, 10)
+
+ow = OwnVessel(0, 0, 90, 5)
+tv1 = TargetVessel(-2, 5.7, 280, 2)
+tv2 = TargetVessel(-5, -1, 95, 12)
+
+state = State(examplestate)
+state.add_target_vessel(tv1)
+state.add_target_vessel(tv2)
+state.add_own_vessel(ow)
+
+print(state.get_state())
+state.write_json("state/state.json")
+
+plot_state(state.get_state(), 10)
