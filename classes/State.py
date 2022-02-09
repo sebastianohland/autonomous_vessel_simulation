@@ -9,30 +9,17 @@ class State:
         self.state = state
 
     def add_target_vessel(self, target_vessel):
-
+        tv_state = target_vessel.get_state()
         if 'targetvessels' not in self.state:
             self.state['targetvessels'] = []
             tv_id = "tv" + str(1)
         else:
             tv_id = "tv" + str(len(self.state['targetvessels']) + 1)
-
-        tv = {
-            "id": tv_id,
-            "xpos": target_vessel.xpos,
-            "ypos": target_vessel.ypos,
-            "course": target_vessel.course,
-            "speed": target_vessel.speed
-        }
-        self.state['targetvessels'].append(tv)
+        tv_state["id"] = tv_id
+        self.state['targetvessels'].append(tv_state)
 
     def add_own_vessel(self, own_vessel):
-        ov = {
-            "xpos": own_vessel.xpos,
-            "ypos": own_vessel.ypos,
-            "course": own_vessel.course,
-            "speed": own_vessel.speed
-        }
-        self.state['ownvessel'] = ov
+        self.state['ownvessel'] = own_vessel.get_state()
 
     def add_static_obstacle(self, obstacle):
         pass

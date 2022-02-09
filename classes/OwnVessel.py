@@ -8,7 +8,12 @@ class OwnVessel:
         self.speed = speed
 
     def get_state(self):
-        return [self.xpos, self.ypos, self.course, self.speed]
+        return {
+            "xpos": self.xpos,
+            "ypos": self.ypos,
+            "course": self.course,
+            "speed": self.speed
+        }
 
     def set_course(self, new_course):
         self.course = new_course

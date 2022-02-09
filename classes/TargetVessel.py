@@ -1,5 +1,3 @@
-from tools import calculate_dcpa_tcpa
-
 
 class TargetVessel:
     def __init__(self, xpos, ypos, course, speed):
@@ -9,8 +7,9 @@ class TargetVessel:
         self.speed = speed
 
     def get_state(self):
-        return [self.xpos, self.ypos, self.course, self.speed]
-
-    def calc_collision_parameters(self, os_speed):
-        pass
-
+        return {
+            "xpos": self.xpos,
+            "ypos": self.ypos,
+            "course": self.course,
+            "speed": self.speed
+        }
