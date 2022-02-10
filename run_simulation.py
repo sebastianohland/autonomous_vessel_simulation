@@ -123,22 +123,22 @@ examplestate = {
 
 
 ow = OwnVessel(0, 0, 90, 5)
-tv1 = TargetVessel(-2, 5.7, 280, 2)
-tv2 = TargetVessel(-5, -1, 95, 12)
+tv3 = TargetVessel(-2, 5.7, 280, 2)
+tv4 = TargetVessel(-5, -1, 95, 12)
 
 state = State(examplestate)
-state.add_target_vessel(tv1)
-state.add_target_vessel(tv2)
+state.add_target_vessel(tv3)
+state.add_target_vessel(tv4)
 state.add_own_vessel(ow)
 
 state_dict = state.get_state()
 write_state(state_dict, "state/state.json")
 plot_state(state_dict, 10)
 
-collision_parameters = calculate_collision_parameters(state.get_state())
+collision_parameters = calculate_collision_parameters(state_dict)
 for i in range(len(collision_parameters)):
     print("Target vessel ID: {} TCPA: {:0.2f} DCPA: {:0.2f}".format(state_dict["targetvessels"][i]["id"],
                                                                     collision_parameters[i][0] * 60,
-                                                                    collision_parameters[i][0]))
+                                                                    collision_parameters[i][1]))
 
 
