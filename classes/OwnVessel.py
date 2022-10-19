@@ -1,25 +1,27 @@
 
 class OwnVessel:
 
-    def __init__(self, xpos, ypos, course, speed):
+    def __init__(self, xpos, ypos, cog, sog, length):
         self.xpos = xpos
         self.ypos = ypos
-        self.course = course
-        self.speed = speed
+        self.cog = cog
+        self.sog = sog
+        self.length = length
 
     def get_state(self):
         return {
             "xpos": self.xpos,
             "ypos": self.ypos,
-            "course": self.course,
-            "speed": self.speed
+            "cog": self.cog,
+            "sog": self.sog,
+            "length": self.length
         }
 
-    def set_course(self, new_course):
-        self.course = new_course
+    def set_cog(self, new_cog):
+        self.cog = new_cog
 
-    def set_speed(self, new_speed):
-        self.speed = new_speed
+    def set_sog(self, new_sog):
+        self.sog = new_sog
 
     def nav_to_wpt(self, wpt_x, wpt_y):
         pass

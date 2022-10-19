@@ -5,48 +5,7 @@ from classes.TargetVessel import TargetVessel
 from classes.OwnVessel import OwnVessel
 from classes.State import State
 from tools import theta_to_coord
-
-
-def calculate_collision_parameters(state):
-    """Input: State of the system in form of dictionary.
-    Returns: List of collision parameters (tuple containing TCPA, DCPA) for every target vessel."""
-    collision_parameters = []
-
-    for i in state["targetvessels"]:
-        x = state["ownvessel"]["xpos"]
-        y = state["ownvessel"]["ypos"]
-        theta = state["ownvessel"]["course"]
-        v = state["ownvessel"]["speed"]
-
-        xb = i["xpos"]
-        yb = i["ypos"]
-        thetab = i["course"]
-        vb = i["speed"]
-
-        k2 = ((np.cos(np.radians(theta)) ** 2) * (v ** 2)) \
-             - (2 * np.cos(np.radians(theta)) * v * np.cos(np.radians(thetab)) * vb) \
-             + ((np.cos(np.radians(thetab)) ** 2) * (vb ** 2)) \
-             + ((np.sin(np.radians(theta)) ** 2) * (v ** 2)) \
-             - (2 * np.sin(np.radians(theta)) * v * np.sin(np.radians(thetab)) * vb) \
-             + (np.sin(np.radians(thetab)) * (vb ** 2))
-
-        k1 = (2 * np.cos(np.radians(theta)) * v * y) \
-             - (2 * np.cos(np.radians(theta)) * v * yb) \
-             - (2 * y * np.cos(np.radians(thetab)) * vb) \
-             + (2 * np.cos(np.radians(thetab)) * vb * yb) \
-             + (2 * np.sin(np.radians(theta)) * v * x) \
-             - (2 * np.sin(np.radians(theta)) * v * xb) \
-             - (2 * x * np.sin(np.radians(thetab)) * vb) \
-             + (2 * np.sin(np.radians(thetab)) * vb * xb)
-
-        k0 = (y ** 2) - (2 * y * yb) + (yb ** 2) + (x ** 2) - (2 * x * xb) + (xb ** 2)
-
-        tcpa = -k1 / (2 * k2)
-        dcpa = np.sqrt(k2 * tcpa ** 2 + k1 * tcpa + k0)
-
-        collision_parameters.append((tcpa, dcpa))
-
-    return collision_parameters
+from modules.collision_parameter_module import calculate_collision_parameters_for_state
 
 
 def plot_state(state, scale):
@@ -70,7 +29,7 @@ def plot_state(state, scale):
     # plot own vessel
     x = state["ownvessel"]["xpos"]
     y = state["ownvessel"]["ypos"]
-    xvector, yvector = theta_to_coord(state["ownvessel"]["course"], state["ownvessel"]["speed"])
+    xvector, yvector = theta_to_coord(state["ownvessel"]["cog"], state["ownvessel"]["sog"])
     ax.scatter(x, y, color='blue')
     ax.arrow(x, y, xvector, yvector, head_width=0.4, head_length=0.4, lw=1, fc='blue', ec='blue',
              length_includes_head=True)
@@ -79,13 +38,24 @@ def plot_state(state, scale):
     for i in state["targetvessels"]:
         x = i["xpos"]
         y = i["ypos"]
-        xvector, yvector = theta_to_coord(i["course"], i["speed"])
+        xvector, yvector = theta_to_coord(i["cog"], i["sog"])
         ax.scatter(x, y, color='red')
         ax.arrow(x, y, xvector, yvector, head_width=0.2, head_length=0.4, lw=1, fc='red', ec='red',
                  length_includes_head=True)
         ax.annotate(i["id"], (x, y))
 
     plt.show()
+
+
+def next_state(state, timefactor):
+    for i in state["targetvessels"]:
+        new_x, new_y = theta_to_coord(i["cog"], i["sog"] / timefactor)
+        i["xpos"] = new_x + i["xpos"]
+        i["ypos"] = new_y + i["ypos"]
+    new_x, new_y = theta_to_coord(state["ownvessel"]["cog"], state["ownvessel"]["sog"] / timefactor)
+    state["ownvessel"]["xpos"] = new_x + state["ownvessel"]["xpos"]
+    state["ownvessel"]["ypos"] = new_y + state["ownvessel"]["ypos"]
+    return state
 
 
 def write_state(state, path):
@@ -97,23 +67,26 @@ examplestate = {
     "ownvessel": {
         "xpos": 0,
         "ypos": 0,
-        "course": 90,
-        "speed": 5
+        "cog": 90,
+        "sog": 5,
+        "length": 100
     },
     "targetvessels": [
         {
             "id": "tv1",
             "xpos": 3.5,
             "ypos": 3.5,
-            "course": 180,
-            "speed": 4
+            "cog": 180,
+            "sog": 4,
+            "length": 60
         },
         {
             "id": "tv2",
             "xpos": 5,
             "ypos": -8,
-            "course": 0,
-            "speed": 8
+            "cog": 10,
+            "sog": 8,
+            "length": 120
         },
     ],
     "staticobstacles": [
@@ -121,24 +94,33 @@ examplestate = {
     ],
 }
 
-
-ow = OwnVessel(0, 0, 90, 5)
-tv3 = TargetVessel(-2, 5.7, 280, 2)
-tv4 = TargetVessel(-5, -1, 95, 12)
+tv3 = TargetVessel(-2, 5.7, 280, 2, 250)
+tv4 = TargetVessel(-5, -1, 95, 12, 150)
 
 state = State(examplestate)
 state.add_target_vessel(tv3)
 state.add_target_vessel(tv4)
-state.add_own_vessel(ow)
+
 
 state_dict = state.get_state()
 write_state(state_dict, "state/state.json")
-plot_state(state_dict, 10)
 
-collision_parameters = calculate_collision_parameters(state_dict)
-for i in range(len(collision_parameters)):
-    print("Target vessel ID: {} TCPA: {:0.2f} DCPA: {:0.2f}".format(state_dict["targetvessels"][i]["id"],
-                                                                    collision_parameters[i][0] * 60,
-                                                                    collision_parameters[i][1]))
+epochs = 10
+scale = 10
+timefactor = 6
 
-
+for i in range(epochs):
+    plot_state(state_dict, scale)
+    collision_parameters = calculate_collision_parameters_for_state(state_dict)
+    print("Epoch: " + str(i + 1))
+    for j in range(len(collision_parameters)):
+        print("ID: {} || Range: {:0.2f} || TCPA: {:0.2f} || DCPA: {:0.2f} || BCR: {:0.2f} || TBCR: {:0.2f}".format(
+            state_dict["targetvessels"][j]["id"],
+            collision_parameters[j][0],
+            collision_parameters[j][1] * 60,
+            collision_parameters[j][2],
+            collision_parameters[j][3],
+            collision_parameters[j][4] * 60
+        ))
+    print("")
+    state_dict = next_state(state_dict, timefactor)

@@ -19,7 +19,7 @@ class State:
         self.state['targetvessels'].append(tv_state)
 
     def add_own_vessel(self, own_vessel):
-        self.state['ownvessel'] = own_vessel.get_state()
+        pass
 
     def add_static_obstacle(self, obstacle):
         pass
