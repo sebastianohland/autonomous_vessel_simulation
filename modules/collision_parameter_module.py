@@ -79,7 +79,7 @@ def calculate_collision_parameters(os_pos, os_cog, os_sog, os_length, ts_pos, ts
     return collision_parameters
 
 
-def calculate_collision_parameters_for_state(state):
+def calculate_state_collision_parameters(state):
 
     os_pos = (state["ownvessel"]["xpos"], state["ownvessel"]["ypos"])
     os_cog = state["ownvessel"]["cog"]

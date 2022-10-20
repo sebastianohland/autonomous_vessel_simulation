@@ -5,10 +5,10 @@ from classes.TargetVessel import TargetVessel
 from classes.OwnVessel import OwnVessel
 from classes.State import State
 from tools import theta_to_coord
-from modules.collision_parameter_module import calculate_collision_parameters_for_state
+from modules.collision_parameter_module import calculate_state_collision_parameters
 
 
-def plot_state(state, scale):
+def plot_state(state, scale, collision_parameters=None):
     """Plots the current state on coordinate system."""
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
@@ -43,6 +43,18 @@ def plot_state(state, scale):
         ax.arrow(x, y, xvector, yvector, head_width=0.2, head_length=0.4, lw=1, fc='red', ec='red',
                  length_includes_head=True)
         ax.annotate(i["id"], (x, y))
+
+    # plot collision parameters as table if argument is given
+    # TODO: y-axis gets compressed when table is added
+    # TODO: create space between table and plot
+    # TODO: convert tcpa and tbcr to minutes
+    # TODO: change order of dcpa and tcpa
+    if collision_parameters:
+        columns = ["range", "tcpa", "dcpa", "bcr", "tbcr"]
+        rows = [i["id"] for i in state["targetvessels"]]
+        data = np.round(collision_parameters, 2)
+        table = ax.table(cellText=data, rowLabels=rows, colLabels=columns)
+        table.scale(1, 1.5)
 
     plt.show()
 
@@ -105,22 +117,22 @@ state.add_target_vessel(tv4)
 state_dict = state.get_state()
 write_state(state_dict, "state/state.json")
 
-epochs = 10
+timesteps = 10
 scale = 10
 timefactor = 6
 
-for i in range(epochs):
-    plot_state(state_dict, scale)
-    collision_parameters = calculate_collision_parameters_for_state(state_dict)
+for i in range(timesteps):
+    coll_parameters = calculate_state_collision_parameters(state_dict)
+    plot_state(state_dict, scale, coll_parameters)
     print("Epoch: " + str(i + 1))
-    for j in range(len(collision_parameters)):
+    for j in range(len(coll_parameters)):
         print("ID: {} || Range: {:0.2f} || TCPA: {:0.2f} || DCPA: {:0.2f} || BCR: {:0.2f} || TBCR: {:0.2f}".format(
             state_dict["targetvessels"][j]["id"],
-            collision_parameters[j][0],
-            collision_parameters[j][1] * 60,
-            collision_parameters[j][2],
-            collision_parameters[j][3],
-            collision_parameters[j][4] * 60
+            coll_parameters[j][0],
+            coll_parameters[j][1] * 60,
+            coll_parameters[j][2],
+            coll_parameters[j][3],
+            coll_parameters[j][4] * 60
         ))
     print("")
     state_dict = next_state(state_dict, timefactor)
