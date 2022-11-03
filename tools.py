@@ -9,8 +9,7 @@ def theta_to_coord(theta, d):
 
 def coord_to_theta(x, y):
     theta = (360 + np.degrees(np.arctan2(x, y))) % 360
-    d = np.sqrt(x ** 2 + y ** 2)
-    return d, theta
+    return theta
 
 
 def line_intersect(Ax1, Ay1, Ax2, Ay2, Bx1, By1, Bx2, By2):

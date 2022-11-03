@@ -1,6 +1,10 @@
 
 class OwnVessel:
 
+    # TODO: add width to attributes
+    # TODO: add vessel type to attributes
+    # TODO: add vessel status to attributes
+
     def __init__(self, xpos, ypos, cog, sog, length):
         self.xpos = xpos
         self.ypos = ypos

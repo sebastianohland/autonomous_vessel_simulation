@@ -12,16 +12,30 @@ def calculate_collision_parameters(os_pos, os_cog, os_sog, os_len, ts_pos, ts_co
     os_vel = theta_to_coord(os_cog, os_sog)
     ts_vel = theta_to_coord(ts_cog, ts_sog)
 
-    # relative position and velocity
+    # relative position and bearing to ts from os perspective
     rel_pos = (ts_pos[0] - os_pos[0], ts_pos[1] - os_pos[1])
-    rel_vel = (ts_vel[0] - os_vel[0], ts_vel[1] - os_vel[1])
+    tb = coord_to_theta(rel_pos[0], rel_pos[1])
+    Q = (tb - os_cog + 360) % 360   # relative bearing
 
-    # calculate range and true bearing
-    rng, bearing = coord_to_theta(rel_pos[0], rel_pos[1])
+    # relative position and bearing to os from ts perspective
+    rel_pos_1 = (os_pos[0] - ts_pos[0], os_pos[1] - ts_pos[1])
+    tb_1 = coord_to_theta(rel_pos_1[0], rel_pos_1[1])
+    Q1 = (tb_1 - ts_cog + 360) % 360  # relative bearing
+
+    # calculate range
+    rng = np.sqrt(rel_pos[0] ** 2 + rel_pos[1] ** 2)
+
+    # relative velocity
+    rel_vel = (ts_vel[0] - os_vel[0], ts_vel[1] - os_vel[1])
 
     # CPA calculation
     tcpa = -(rel_pos[1] * rel_vel[1] + rel_pos[0] * rel_vel[0]) / (rel_vel[1] ** 2 + rel_vel[0] ** 2)
     dcpa = np.sqrt((rel_pos[1] + rel_vel[1] * tcpa) ** 2 + (rel_pos[0] + rel_vel[0] * tcpa) ** 2)
+
+    # speed ratio (risk increases when speed ratio decreases)
+    v_rat = os_sog / ts_sog
+
+    # TODO: check bcr calculations
 
     # calculate absolute position of velocity vectors
     os_abs_vel = (os_pos[0] + os_vel[0], os_pos[1] + os_vel[1])
@@ -70,11 +84,13 @@ def calculate_collision_parameters(os_pos, os_cog, os_sog, os_len, ts_pos, ts_co
     tbcr = tbcr * bcr_sign
 
     collision_parameters.append(rng)
-    collision_parameters.append(bearing)
     collision_parameters.append(dcpa)
     collision_parameters.append(tcpa)
     collision_parameters.append(bcr)
     collision_parameters.append(tbcr)
+    collision_parameters.append(Q)
+    collision_parameters.append(Q1)
+    collision_parameters.append(v_rat)
 
     return collision_parameters
 
@@ -103,13 +119,15 @@ def calculate_state_collision_parameters(state):
 
 def print_collision_parameters(coll_parameters):
     for j in range(len(coll_parameters)):
-        print("Range: {:0.2f} || Bearing: {:0.2f} || DCPA: {:0.2f} || TCPA: {:0.2f} || BCR: {:0.2f} || TBCR: {:0.2f}"
+        print("Range: {:0.2f} || DCPA: {:0.2f} || TCPA: {:0.2f} || BCR: {:0.2f} || TBCR: {:0.2f} || Q: {:0.2f} || Q1: {:0.2f} || v_rat: {:0.2f}"
               .format(coll_parameters[j][0],
                       coll_parameters[j][1],
-                      coll_parameters[j][2],
-                      coll_parameters[j][3] * 60,
-                      coll_parameters[j][4],
-                      coll_parameters[j][5] * 60
+                      coll_parameters[j][2] * 60,
+                      coll_parameters[j][3],
+                      coll_parameters[j][4] * 60,
+                      coll_parameters[j][5],
+                      coll_parameters[j][6],
+                      coll_parameters[j][7]
                       )
               )
     print("")
