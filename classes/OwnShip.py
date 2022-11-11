@@ -1,16 +1,17 @@
 
-class OwnVessel:
+class OwnShip:
 
-    # TODO: add width to attributes
-    # TODO: add vessel type to attributes
-    # TODO: add vessel status to attributes
-
-    def __init__(self, xpos, ypos, cog, sog, length):
+    def __init__(self, xpos, ypos, cog, sog, length, type=None, status=None, tss=False, nar_ch=False, res_vis=False):
         self.xpos = xpos
         self.ypos = ypos
         self.cog = cog
         self.sog = sog
         self.length = length
+        self.type = type
+        self.status = status
+        self.tss = tss
+        self.nar_ch = nar_ch
+        self.res_vis = res_vis
 
     def get_state(self):
         return {
@@ -18,7 +19,12 @@ class OwnVessel:
             "ypos": self.ypos,
             "cog": self.cog,
             "sog": self.sog,
-            "length": self.length
+            "length": self.length,
+            "type": self.type,
+            "status": self.status,
+            "tss": self.tss,
+            "nar_ch": self.nar_ch,
+            "res_vis": self.res_vis
         }
 
     def set_cog(self, new_cog):

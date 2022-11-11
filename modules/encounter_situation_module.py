@@ -1,6 +1,6 @@
 
 
-def define_encounter_situation(collision_parameters):
+def calculate_encounter_situation(Q, Q1, tcpa):
 
     encounter_situations = ["head-on",
                             "overtaking",
@@ -11,10 +11,6 @@ def define_encounter_situation(collision_parameters):
 
     # TODO: check rules for encounter situations
     # TODO: add rule so that encounter situation does not change during ongoing situation
-
-    Q = collision_parameters[5]
-    Q1 = collision_parameters[6]
-    tcpa = collision_parameters[2]
 
     if tcpa < 0:
         return encounter_situations[5]
@@ -38,12 +34,15 @@ def define_encounter_situation(collision_parameters):
         return None
 
 
-def calculate_state_encounter_situations(collision_paramters):
+def calculate_state_encounter_situations(state_collision_parameters):
 
     encounter_situations = []
 
-    for i in collision_paramters:
-        encounter = define_encounter_situation(i)
+    for collision_parameters in state_collision_parameters:
+        Q = collision_parameters[5]
+        Q1 = collision_parameters[6]
+        tcpa = collision_parameters[2]
+        encounter = calculate_encounter_situation(Q, Q1, tcpa)
         encounter_situations.append(encounter)
 
     return encounter_situations
